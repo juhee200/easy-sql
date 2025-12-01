@@ -35,14 +35,15 @@ ENV/
 *~
 .DS_Store
 
-# Environment variables
-.env
+## Environment variables
+#.env
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
 data/*.db
+jdbc*
 
 # Logs
 *.log
