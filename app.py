@@ -1,9 +1,14 @@
 import streamlit as st
-import pandas as pd
 from src.llm.nl_to_sql import NLToSQLConverter
 from src.database.db_manager import DatabaseManager
 from src.visualization.chart_generator import ChartGenerator
 from config.settings import settings
+import os
+import subprocess
+
+if not os.path.exists('data/sample.db'):
+    os.makedirs('data', exist_ok=True)
+    subprocess.run(['python', 'create_sample_db.py'], check=True)
 
 # Page configuration
 st.set_page_config(
