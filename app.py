@@ -172,7 +172,7 @@ def main():
         placeholder="예: Show me the total revenue by category"
     )
 
-    col1, col2 = st.columns([1, 5])
+    col1, col2 = st.columns(2)
 
     with col1:
         submit_button = st.button("🚀 실행", type="primary", use_container_width=True)
