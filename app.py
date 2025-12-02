@@ -185,65 +185,68 @@ def main():
         st.session_state.query_results = []
         st.rerun()
 
-    if submit_button and user_query:
-        with st.spinner("SQL 쿼리 생성 중..."):
-            # Initialize LLM
-            converter = init_llm(llm_provider, llm_model)
+    if submit_button:
+        if not user_query or not user_query.strip():
+            st.warning("⚠️ 질문을 입력해주세요.")
+        else:
+            with st.spinner("SQL 쿼리 생성 중..."):
+                # Initialize LLM
+                converter = init_llm(llm_provider, llm_model)
 
-            if not converter:
-                st.error("LLM 초기화에 실패했습니다. API 키를 확인하세요.")
-                return
-
-            # Get schema info
-            schema_info = db.get_schema_info()
-
-            # Convert to SQL
-            try:
-                sql_query = converter.convert(
-                    user_query,
-                    schema_info,
-                    st.session_state.conversation_history
-                )
-
-                # Validate query
-                if not converter.validate_query(sql_query):
-                    st.error("⚠️ 생성된 쿼리가 안전하지 않거나 유효하지 않습니다.")
+                if not converter:
+                    st.error("LLM 초기화에 실패했습니다. API 키를 확인하세요.")
                     return
 
-                # Display generated SQL
-                st.subheader("📝 생성된 SQL 쿼리")
-                st.markdown(f'<div class="sql-box"><code>{sql_query}</code></div>', unsafe_allow_html=True)
+                # Get schema info
+                schema_info = db.get_schema_info()
 
-                # Execute query
-                with st.spinner("쿼리 실행 중..."):
-                    success, result = db.execute_query(sql_query)
+                # Convert to SQL
+                try:
+                    sql_query = converter.convert(
+                        user_query,
+                        schema_info,
+                        st.session_state.conversation_history
+                    )
 
-                    if success:
-                        st.success(f"✅ 쿼리 실행 완료! ({len(result)} 행)")
-
-                        # Save to history
-                        st.session_state.conversation_history.append({
-                            "role": "user",
-                            "content": user_query
-                        })
-                        st.session_state.conversation_history.append({
-                            "role": "assistant",
-                            "content": sql_query
-                        })
-
-                        st.session_state.query_results.append({
-                            "query": user_query,
-                            "sql": sql_query,
-                            "result": result
-                        })
-
-                    else:
-                        st.error(f"❌ 쿼리 실행 실패: {result}")
+                    # Validate query
+                    if not converter.validate_query(sql_query):
+                        st.error("⚠️ 생성된 쿼리가 안전하지 않거나 유효하지 않습니다.")
                         return
 
-            except Exception as e:
-                st.error(f"❌ 오류 발생: {str(e)}")
-                return
+                    # Display generated SQL
+                    st.subheader("📝 생성된 SQL 쿼리")
+                    st.markdown(f'<div class="sql-box"><code>{sql_query}</code></div>', unsafe_allow_html=True)
+
+                    # Execute query
+                    with st.spinner("쿼리 실행 중..."):
+                        success, result = db.execute_query(sql_query)
+
+                        if success:
+                            st.success(f"✅ 쿼리 실행 완료! ({len(result)} 행)")
+
+                            # Save to history
+                            st.session_state.conversation_history.append({
+                                "role": "user",
+                                "content": user_query
+                            })
+                            st.session_state.conversation_history.append({
+                                "role": "assistant",
+                                "content": sql_query
+                            })
+
+                            st.session_state.query_results.append({
+                                "query": user_query,
+                                "sql": sql_query,
+                                "result": result
+                            })
+
+                        else:
+                            st.error(f"❌ 쿼리 실행 실패: {result}")
+                            return
+
+                except Exception as e:
+                    st.error(f"❌ 오류 발생: {str(e)}")
+                    return
 
     # Display results
     if st.session_state.query_results:
