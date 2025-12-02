@@ -7,8 +7,19 @@ import os
 import subprocess
 
 if not os.path.exists('data/sample.db'):
-    os.makedirs('data', exist_ok=True)
-    subprocess.run(['python', 'create_sample_db.py'], check=True)
+    try:
+        os.makedirs('data', exist_ok=True)
+        result = subprocess.run(['python', 'create_sample_db.py'],
+                              check=True,
+                              capture_output=True,
+                              text=True)
+        print(f"Database initialization: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to create database: {e.stderr}")
+        raise
+    except Exception as e:
+        print(f"Failed to initialize database: {str(e)}")
+        raise
 
 # Page configuration
 st.set_page_config(
