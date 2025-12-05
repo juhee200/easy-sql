@@ -1,14 +1,16 @@
 import streamlit as st
+import pandas as pd
 from src.llm.nl_to_sql import NLToSQLConverter
 from src.database.db_manager import DatabaseManager
 from src.visualization.chart_generator import ChartGenerator
 from config.settings import settings
-import os
-import subprocess
+import logging
 
-if not os.path.exists('data/sample.db'):
-    os.makedirs('data', exist_ok=True)
-    subprocess.run(['python', 'create_sample_db.py'], check=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Page configuration
 st.set_page_config(
@@ -58,7 +60,6 @@ def init_database():
         return None
 
 
-@st.cache_resource
 def init_llm(provider, model):
     """Initialize LLM converter"""
     try:
@@ -66,6 +67,7 @@ def init_llm(provider, model):
         return converter
     except Exception as e:
         st.error(f"Failed to initialize LLM: {str(e)}")
+        print("INIT ERROR:", e)
         return None
 
 
@@ -90,8 +92,8 @@ def main():
         )
 
         model_options = {
-            "openai": ["gpt-4", "gpt-4-turbo-preview", "gpt-3.5-turbo"],
-            "anthropic": ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]
+            "openai": ["gpt-4o-mini"],
+            "anthropic": ["claude-3-haiku-20240307"]
         }
 
         llm_model = st.selectbox(
@@ -176,6 +178,9 @@ def main():
 
     if submit_button and user_query:
         with st.spinner("SQL 쿼리 생성 중..."):
+            logger.info(f"User query: {user_query}")
+            logger.info(f"LLM Provider: {llm_provider}")
+
             # Initialize LLM
             converter = init_llm(llm_provider, llm_model)
 
