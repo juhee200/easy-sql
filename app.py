@@ -151,14 +151,9 @@ def main():
     st.subheader("🔍 질문 입력")
 
     # Use example query if set
-    default_query = ""
-    if "example_query" in st.session_state:
-        default_query = st.session_state.example_query
-        del st.session_state.example_query
-
     user_query = st.text_area(
         "자연어로 질문을 입력하세요",
-        value=default_query,
+        value=st.session_state.get("example_query", ""),
         height=100,
         placeholder="예: Show me the total revenue by category"
     )
@@ -177,6 +172,9 @@ def main():
         st.rerun()
 
     if submit_button and user_query:
+        if "example_query" in st.session_state:
+            del st.session_state.example_query
+
         with st.spinner("SQL 쿼리 생성 중..."):
             logger.info(f"User query: {user_query}")
             logger.info(f"LLM Provider: {llm_provider}")
